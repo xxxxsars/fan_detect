@@ -1,0 +1,75 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fan Detection</title>
+    <link rel="icon" type="image/png" href="{% static "pic/qsi_icon.png" %}" sizes="96x96">
+    <link rel="stylesheet" href="{% static "bower_components/admin-lte/dist/css/adminlte.css" %}">
+    <link type="text/css" rel="stylesheet" href="{% static "bower_components/boostrap/dist/css/bootstrap.min.css" %}">
+    <link type="text/css" rel="stylesheet" href="{% static "bower_components/toastr/toastr.css" %}">
+    <link type="text/css" rel="stylesheet" href="{% static "bower_components/semantic/dist/semantic.min.css" %}">
+    <link type="text/css" rel="stylesheet" href="{% static "bower_components/components-font-awesome/css/fontawesome.min.css" %}">
+    <link type="text/css" rel="stylesheet" href="{% static "bower_components/components-font-awesome/css/brands.min.css" %}">
+    <link type="text/css" rel="stylesheet" href="{% static "bower_components/components-font-awesome/css/solid.css" %}">
+
+
+    <script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
+    <script src="{% static "bower_components/boostrap/dist/js/bootstrap.bundle.min.js" %}"></script>
+    <script src={% static "bower_components/boostrap/dist/js/bootstrap.min.js" %}></script>
+    <script src="{% static "bower_components/toastr/toastr.js" %}"></script>
+    <script src="{% static "bower_components/admin-lte/dist/js/adminlte.js" %}"></script>
+
+    <script src="{% static "bower_components/common/handler.js" %}"></script>
+
+
+
+    {% block src %}
+    {% endblock %}
+
+
+    <style>
+
+
+        input[type=submit] {
+            padding: 5px 15px;
+            background: #ccc;
+            border: 0 none;
+            cursor: pointer;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+        }
+{#        body{#}
+{#   min-width:1000px;        /* Suppose you want minimum width of 1000px */#}
+{#   width: auto !important;  /* Firefox will set width as auto */#}
+{#   width:1000px;            /* As IE6 ignores !important it will set width as 1000px; */#}
+{#}#}
+
+    </style>
+
+
+    <!--extend css -->
+    {% block css %}
+
+    {% endblock %}
+    <!--extend js -->
+    {% block js %}{% endblock %}
+    <!--extend js/css path-->
+    {% block head %}{% endblock %}
+
+
+</head>
+
+
+<body style=";overflow-x: auto">
+
+
+ <nav class="navbar navbar-dark fixed-top  bg-secondary">
+  <a class="navbar-brand">Fan Detection</a>
+</nav>
+
+
+<div class="container">
+    {% block body %}Pleas extend body block {% endblock %}
+</div>
+</body>
+</html>
