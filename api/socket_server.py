@@ -15,9 +15,9 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
-# config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
-# sess = tf.compat.v1.Session(config=config)
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
+config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
+sess = tf.compat.v1.Session(config=config)
 
 from fan_detect.settings import *
 
