@@ -1,3 +1,4 @@
-media/*
+media/saved_model
+media/image
 ./.idea/*
 test

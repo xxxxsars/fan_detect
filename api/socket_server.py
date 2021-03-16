@@ -64,26 +64,17 @@ def run_inference_for_single_image(model, image):
 
     return output_dict
 
-
-
-
 def load_model(model_dir):
     model = tf.saved_model.load(model_dir)
     return model
 
 def load_image(image_path):
     img = Image.open(image_path)
-    # width, height = img.size
-    # if width >320 or height >320:
-    #     down_scale = round(320 / width, 2)
-    #     img = img.resize((int(width * down_scale), int(height * down_scale)), Image.ANTIALIAS)
-
     image_np = np.array(img)
     return  image_np
 
 def load_label(label_path):
     return label_map_util.create_category_index_from_labelmap(label_path, use_display_name=True)
-
 
 def show_inference(model,category_index, image_np):
 
@@ -107,9 +98,7 @@ def show_inference(model,category_index, image_np):
 
     return  result
 
-
-
-def predict_image(model,label,image_path,out_img_path)->str:
+def predict_image(model,label,image_path,out_img_path=None)->str:
 
     image_np = load_image(image_path)
 
@@ -138,6 +127,9 @@ class SOCKERT_SERVER:
     def __init__(self):
         self.host = SOCKET_HOST
         self.prot = SOCKET_PORT
+        self.model = load_model(handle_path(MEDIA_ROOT, "saved_model"))
+        self.label =  load_label(  handle_path(MEDIA_ROOT ,'label_map.pbtxt'))
+
 
     def start(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -145,12 +137,13 @@ class SOCKERT_SERVER:
         server.bind((self.host, self.prot))
         server.listen(1)
 
-
-        model = load_model(handle_path(MEDIA_ROOT, "saved_model"))
-        label =  load_label(  handle_path(MEDIA_ROOT ,'label_map.pbtxt'))
+        test_class = predict_image(self.model, self.label, handle_path(MEDIA_ROOT,"test.jpg"))
+        assert test_class =="PASS","Initial predict image had error."
 
         time = (datetime.datetime.now()).strftime("%d/%b/%Y %H:%H:%S")
         print( f"[{time}] Model load successfully...")
+
+
         while True:
             conn, addr = server.accept()
             try:
@@ -158,7 +151,7 @@ class SOCKERT_SERVER:
                 img_path = handle_path(MEDIA_ROOT,"image","source",f"{sn}.jpg")
                 out_path = handle_path(MEDIA_ROOT,"image","result",f"{sn}.jpg")
 
-                predict_class = predict_image(model, label, img_path,out_path)
+                predict_class = predict_image(self.model, self.label, img_path,out_path)
                 conn.sendall(predict_class.encode())
             except Exception as e:
                 err  = f"Error : {e}"
@@ -171,19 +164,16 @@ if __name__ =="__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
 
     if gpus:
-        # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+        # Restrict TensorFlow to only allocate 3GB of memory on the first GPU
         try:
-            tf.config.experimental.set_virtual_device_configuration(gpus[0],
-                                                                    [tf.config.experimental.VirtualDeviceConfiguration(                                                          memory_limit=3072)])
+            tf.config.experimental.set_virtual_device_configuration(gpus[0],[tf.config.experimental.VirtualDeviceConfiguration(memory_limit=3072)])
             logical_gpus = tf.config.experimental.list_logical_devices('GPU')
             print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
         except RuntimeError as e:
-            # Virtual devices must be set before GPUs have been initialized
             print(e)
 
 
     s = SOCKERT_SERVER()
-
     try:
         s.start()
     except Exception as e:
