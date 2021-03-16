@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
-import sys
-
+import sys,time
+from api.handler import *
 
 def main():
     """Run administrative tasks."""
@@ -17,6 +17,16 @@ def main():
         ) from exc
     execute_from_command_line(sys.argv)
 
+def reset_status():
+    retry = True
+    while retry:
+        try:
+            update_status("Initial")
+            retry = False
+        except Exception as e:
+            retry = True
+            time.sleep(1)
 
 if __name__ == '__main__':
+    reset_status()
     main()

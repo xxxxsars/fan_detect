@@ -12,6 +12,19 @@ import socket
 
 
 
+@api_view(["GET"])
+def socket_status(request):
+    try:
+        g = get_socket_status()
+    except Exception as e:
+        return JsonResponse({"status": f"Initial"}, status=417)
+
+    status = g["status"]
+    if status == "Finish":
+        return JsonResponse({"status":status }, status=200)
+    else:
+        return JsonResponse({"status": status}, status=417)
+
 @api_view(["POST"])
 def predict_image(request):
     if request.method == "POST":

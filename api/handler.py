@@ -4,17 +4,15 @@ Created on 2021/2/24
 
 Author Andy Huang
 '''
-
-import matplotlib.pyplot as plt
 import base64
 import os
 import re
-import cv2
-import numpy as np
 from PIL import Image
 import io
-from base64 import decodestring
+import fcntl
+import json
 
+from fan_detect.settings import SOCKET_STATUS
 from fan_detect import settings
 
 def handle_path(root_path:str, *arg: str) -> str:
@@ -71,3 +69,19 @@ def clean_file(sn:str):
                 print(f"Error: {e} , in the {p}")
 
 
+
+def get_socket_status():
+    with open(settings.SOCKET_STATUS,"r") as fin:
+        fcntl.flock(fin, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return json.load(fin)
+
+
+def update_status(status:str):
+    fin =  open(SOCKET_STATUS,'w')
+
+    fcntl.flock(fin, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    result = {"status":status}
+    json.dump(result,fin)
+
+    fcntl.flock(fin, fcntl.LOCK_UN)
+    fin.close()

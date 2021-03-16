@@ -11,5 +11,6 @@ from api.views import *
 
 urlpatterns = [
     url("^predict_image/$", predict_image),
+    url("^socket_status/$", socket_status),
 ]
 

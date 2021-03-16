@@ -7,9 +7,7 @@ Author Andy Huang
 
 import socket
 import datetime
-import json
-import cv2
-import numpy as np
+import logging
 import tensorflow as tf
 import os
 import sys
@@ -19,7 +17,6 @@ os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
 config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
 sess = tf.compat.v1.Session(config=config)
 
-from fan_detect.settings import *
 
 
 from api.object_detection.utils import ops as utils_ops
@@ -27,7 +24,15 @@ from api.object_detection.utils import label_map_util
 from api.object_detection.utils import visualization_utils as vis_util
 
 from handler import *
-from fan_detect.settings import MEDIA_ROOT,SOCKET_PORT,SOCKET_HOST
+from fan_detect.settings import MEDIA_ROOT,SOCKET_PORT,SOCKET_HOST,LOG_PATH
+
+
+
+logging.basicConfig(filename=LOG_PATH,
+                    filemode='a',
+                    format='%(asctime)s: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.ERROR)
 
 def run_inference_for_single_image(model, image):
     image = np.asarray(image)
@@ -132,6 +137,7 @@ class SOCKERT_SERVER:
 
 
     def start(self):
+        update_status("Initial")
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind((self.host, self.prot))
@@ -142,10 +148,12 @@ class SOCKERT_SERVER:
 
         time = (datetime.datetime.now()).strftime("%d/%b/%Y %H:%H:%S")
         print( f"[{time}] Model load successfully...")
+        update_status("Finish")
 
 
         while True:
             conn, addr = server.accept()
+            #Runtime error will show on web page
             try:
                 sn = str(conn.recv(1024), encoding='utf-8')
                 img_path = handle_path(MEDIA_ROOT,"image","source",f"{sn}.jpg")
@@ -170,13 +178,14 @@ if __name__ =="__main__":
             logical_gpus = tf.config.experimental.list_logical_devices('GPU')
             print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
         except RuntimeError as e:
-            print(e)
+            logging.error(e)
 
-
+    #Initial socket server error will record to log.
     s = SOCKERT_SERVER()
     try:
         s.start()
     except Exception as e:
-        print(e)
+        logging.error(e)
+
 
 
