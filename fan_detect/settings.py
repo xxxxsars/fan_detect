@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'k1+*bu8c9#d3=&5n!7%(4!6j)#=dn*re=lec@9b+mt0xs_c5f_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -123,9 +123,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-STATIC_ROOT = 'static'
-
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 import mimetypes
@@ -133,7 +131,7 @@ mimetypes.add_type("application/javascript", ".js", True)
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'fan_detect/static'),
+    os.path.join(BASE_DIR, 'fan_detect/static/'),
 )
 
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")
