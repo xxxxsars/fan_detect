@@ -135,6 +135,8 @@ STATICFILES_DIRS = (
 )
 
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")
+LOG_PATH = os.path.join(os.path.join(BASE_DIR,"log"),"socket_err.log")
+CONFIG_PATH = os.path.join(BASE_DIR,"config.ini")
 
 SESSION_COOKIE_AGE = 60 *60
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -142,5 +144,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SOCKET_HOST = '127.0.0.1'
 SOCKET_PORT = 888
+SOCKET_STATUS = os.path.join(MEDIA_ROOT,"status.json")
 
 
