@@ -8,6 +8,9 @@ Author Andy Huang
 import socket
 import datetime
 import logging
+import json
+import cv2
+import numpy as np
 import tensorflow as tf
 import os
 import sys
