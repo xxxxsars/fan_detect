@@ -181,6 +181,7 @@ if __name__ =="__main__":
             logical_gpus = tf.config.experimental.list_logical_devices('GPU')
             print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
         except RuntimeError as e:
+            print(e)
             logging.error(e)
 
     #Initial socket server error will record to log.
@@ -188,6 +189,7 @@ if __name__ =="__main__":
     try:
         s.start()
     except Exception as e:
+        print(e)
         logging.error(e)
 
 

@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.conf.urls import url, include
+from django.conf.urls import url, include,re_path
 from django.views.static import serve
 from .views import *
 from .settings import STATIC_ROOT
@@ -30,5 +30,6 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     url(r'^static/(?P<path>.*)$', serve, {'document_root': STATIC_ROOT}),
     url("^$", index, name="index"),
+    url(r'^scan', scan, name='scan'),
     url("^api/", include("api.urls")),
 ]

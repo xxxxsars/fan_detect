@@ -9,8 +9,57 @@ from django.http.response import JsonResponse
 from .handler import *
 from fan_detect import settings
 import socket
+import requests
+
+@api_view(["POST"])
+def sfc_checkin(request):
+
+    check_keys = ["work_order","sn","user_id"]
+
+    for key in check_keys:
+        if key not in request.data:
+            return JsonResponse({"message": f"The '{key}' not existed"}, status=417)
+
+    try:
+        work_order = request.data.get("work_order")
+        sn = request.data.get("sn")
+        user_id = request.data.get("user_id")
+        checkin(work_order,sn,user_id)
+    except Exception as e:
+        return JsonResponse({"message": f"Check In had error:{e}"}, status=417)
+
+    return JsonResponse({"message": "check in successfully."}, status=200)
 
 
+@api_view(["POST"])
+def sfc_checkout(request):
+
+    check_keys = ["work_order","sn","test_result"]
+    for key in check_keys:
+        if key not in request.data:
+            return JsonResponse({"message": f"The '{key}' not existed"}, status=417)
+
+
+    try:
+        work_order = request.data.get("work_order")
+        sn = request.data.get("sn")
+        test_result = request.data.get("test_result")
+        checkout(work_order, sn, test_result)
+    except Exception as e:
+        return JsonResponse({"message": f"Check Out had error:{e}"}, status=417)
+    return JsonResponse({"message": "check out successfully."}, status=200)
+
+@api_view(["GET"])
+def sfc_status(request):
+    try:
+        save = get_ini()["SFC_SETTING"]["save"]
+    except Exception as e:
+        return JsonResponse({"message": f"Get sfc status error:{e}"}, status=417)
+
+    if save !="True":
+        return JsonResponse({"status": False}, status=200)
+    else:
+        return JsonResponse({"status": True}, status=200)
 
 @api_view(["GET"])
 def socket_status(request):

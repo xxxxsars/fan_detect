@@ -1,204 +1,35 @@
 {% extends "base.html" %}
-
-{% load static %}
-
-{% block src %}
-    <script type="text/javascript" src="{% static "bower_components/webcam/webcam.js" %}"></script>
-{% endblock %}]
-
-
-
 {% block css %}
     <style>
-
-        body {
-            font-family: Helvetica, sans-serif;
-            background: #e8eaed;
-        }
-
-        div.card {
-            max-width: 550px;
-        }
-
 
     </style>
 {% endblock %}
 
+
 {% block js %}
-
-
-
-
     <script>
-
-        function show_message(element, content) {
-            $(".message-box").each(function () {
-                $(this).find("p").remove();
-            })
-
-            $(".message-box").attr("hidden", true)
-            element.attr("hidden", false)
-            element.find("div.inner").append("<p>" + content + "</p>")
-        }
-
-        function ajax_loading(element) {
-            var ori_content = element.html()
-            $(document).ajaxStart(function () {
-                show_message($("#message"), "")
-                let html_content =
-                    '              <div id="loading" class="d-flex flex-column align-items-center justify-content-center">\n' +
-                    '                            <div class="row">\n' +
-                    '                                <div class="spinner-border m-4" role="status">\n' +
-                    '                                    <span class="sr-only">Loading...</span>\n' +
-                    '                                </div>\n' +
-                    '                            </div>\n' +
-                    '                            <div class="row">\n' +
-                    '                                <strong>Check the fan, please wait a moment...</strong>\n' +
-                    '                            </div>\n' +
-                    '              </div>'
-
-
-                element.html(html_content)
-                $('input').attr("disabled", true)
-
-            });
-
-            $(document).ajaxComplete(function () {
-                stopLoading(element, ori_content)
-            });
-        }
-
-
-        function stopLoading(element, ori_content) {
-
-            element.html(ori_content)
-            $('input').attr("disabled", false)
-            $("#input-sn").focus();
-
-        }
-
-
-        function init() {
-            $("body").hide();
-
-            $("html").append(
-                '<div class="load_panel" style="width: 100%; height: 100%;">' +
-                '  <div class="ui active  dimmer">' +
-                '    <div class="ui  medium text loader">Load AI Model ,Please waiting...</div>' +
-                '  </div>' +
-                '</div>');
-
-
-            (function worker() {
-                var continuePolling = true;
-                $.ajax({
-                    method: 'GET',
-                    url: "api/socket_status/",
-                    success: function (data) {
-                        $(".load_panel").each(function () {
-                            $(this).remove()
-                        });
-
-                        $("body").show()
-                        continuePolling = false;
-                    },
-                    complete: function () {
-                        // Schedule the next request when the current one's complete\
-                        if (continuePolling){
-                            setTimeout(worker, 2000);
-                        }
-                    }
-                });
-            })();
-
-
-            Webcam.set({
-                width: 576,
-                height: 432,
-
-                // final cropped size
-                crop_width: 460,
-                crop_height: 345,
-
-                image_format: 'jpeg',
-                jpeg_quality: 90
-            });
-            setup("preview-camera");
-            show_message($("#message"), "Please scan sn in the left input box.")
-
-            $("#input-sn").focus();
-        }
-
-
         $(function () {
 
-            init()
+            var wo,uid = "";
 
-            ajax_loading($("#message"))
+            $("#input-wo").focus();
 
-            $('#input-sn').on("keyup", function (e) {
+
+            $('#input-wo').on("keyup", function (e) {
                 if (e.keyCode == 13) {
-                    let sn = $(this).val();
-
-                    var img = take_snapshot($("#show-image"));
-
-                    img = img.replace(/^data:image\/[a-z]+;base64,/, "");
-
-                    $.ajax({
-                        url: "/api/predict_image/", // the endpoint,commonly same url
-                        type: 'POST',
-                        dataType: "json",
-                        contentType: "application/json;charset=utf-8",
-                        timeout: 4000,
-                        data: JSON.stringify({
-                            csrfmiddlewaretoken: getCookie("csrftoken"),
-                            "image": img,
-                            "sn": sn
-                        }),
-
-                        success: function (respText) {
-
-                            let predict = (respText["predict"])
-                            let img = "data:image/jpeg;base64," + respText["image"]
-
-                            $("#show-image").html('<img  src="' + img + '"/>');
-
-                            element = ""
-
-                            if (predict == "PASS") {
-                                element = $("#pass")
-                            } else if (predict == "FAIL") {
-                                element = $("#fail")
-
-                            } else {
-                                element = $("#warning")
-                            }
-
-                            show_message(element, respText["message"])
-
-                        },
-                        error: function (respText, status) {
-                            var err_msg = "";
-                            if (status == "timeout") {
-                                stopLoading($("#message"), '<div class="inner"><h3>Scan SN</h3><p>Please scan sn in the left input box.</p></div>')
-                                err_msg = "Detection timeout ,please try again."
-
-                            } else {
-                                err_msg = (respText.responseJSON).message;
-                            }
-
-                            toastr.error(err_msg, "Generic Error!", {
-                                closeButton: true,
-                                "positionClass": "toast-bottom-right",
-                                "preventDuplicates": false,
-                                "extendedTimeOut": 0,
-                                "tapToDismiss": false
-                            });
-                        },
-                    });
-                    $(this).val("")
+                    wo = $(this).val();
+                    $("#input-uid").focus()
                 }
-            });
+            })
+
+
+            $('#input-uid').on("keyup", function (e) {
+                if (e.keyCode == 13) {
+                    uid = $(this).val();
+                    window.location = '/scan?work_order=' + wo +"&user_id=" +uid;
+                }
+            })
+
         })
 
 
@@ -207,104 +38,40 @@
 {% endblock %}
 
 
-
-
 {% block body %}
-    <div class="row" style="padding-top: 5%">
-        <div class="col-6">
-
-            <div class="col" style="padding-bottom: 20px">
-                <div class="card scroll sample-card">
-                    <h3 class="card-header">Scan SN</h3>
-
-                    <div class="card-body">
-                        <input id="input-sn" type="text" class="form-control" placeholder="Please Scan Sn">
-                    </div>
-                </div>
-            </div>
 
 
-            <div class="col">
-                <div class="card">
-                    <h3 class="card-header">Preview Camera</h3>
 
 
-                    <div class="card-body">
-
-                        <div id="preview-result">
-                            <div style="margin-top: 20px"
-                                 id="preview-camera">
-                            </div>
+    <div class="row" style="padding-top: 10%">
+        <div class="col">
 
 
+            <div class="card scroll sample-card">
+                <h3 class="card-header secondary">Scan Data</h3>
+
+                <div class="card-body">
+
+                    <div class="input-group  mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="background-color: #e9ecef00;">Work Order</span>
                         </div>
+                        <input id="input-wo" type="text" class="form-control" placeholder="Please Scan Work Order">
+
+                    </div>
+
+                    <div class="input-group  mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="background-color: #e9ecef00;">User ID</span>
+                        </div>
+                        <input id="input-uid" type="text" class="form-control" placeholder="Please Scan User ID">
 
                     </div>
 
                 </div>
-
             </div>
 
         </div>
-
-        <div class="col-6">
-            <div class="col" style="padding-bottom: 20px;height: 150px">
-
-
-                <div id="message" class="small-box bg-yellow message-box">
-                    <div class="inner">
-                        <h3>Scan SN</h3>
-
-                    </div>
-                </div>
-
-
-                <div id="warning" class="small-box bg-yellow message-box">
-                    <div class="inner">
-                        <h3>WARNING</h3>
-
-                    </div>
-                </div>
-
-
-                <div id="pass" class="small-box bg-green message-box" hidden>
-                    <div class="inner">
-                        <h3>PASS</h3>
-
-                    </div>
-
-                </div>
-
-                <div id="fail" class="small-box bg-red message-box" hidden>
-                    <div class="inner">
-                        <h3>FAIL</h3>
-
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col" style="padding-bottom: 20px">
-                <div class="card scroll sample-card">
-                    <h3 class="card-header">Show Image</h3>
-
-                    <div class="card-body">
-                        <div style="margin-top: 20px"
-                             id="show-image">
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-        </div>
-
-
     </div>
-
 
 {% endblock %}

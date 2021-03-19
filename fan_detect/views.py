@@ -17,6 +17,7 @@ from api.handler import *
 from fan_detect.settings import *
 
 def index(request):
-
-
     return render(request, 'index.html', locals())
+
+def scan(request):
+    return render(request, 'scan.html', locals())
