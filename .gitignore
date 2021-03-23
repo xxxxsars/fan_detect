@@ -3,3 +3,4 @@ media/image
 ./.idea/*
 test
 media/status.json
+log/socket_err.log

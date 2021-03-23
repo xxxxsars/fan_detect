@@ -244,8 +244,6 @@
         $(function () {
 
 
-            console.log(sfc_status())
-
             let searchParams = new URLSearchParams(window.location.search)
             let work_order = searchParams.get('work_order')
             let user_id = searchParams.get('user_id')
@@ -272,7 +270,8 @@
                         data: JSON.stringify({
                             csrfmiddlewaretoken: getCookie("csrftoken"),
                             "image": img,
-                            "sn": sn
+                            "sn": sn,
+                            "work_order":work_order
                         }),
 
                         success: function (respText) {

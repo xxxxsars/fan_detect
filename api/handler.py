@@ -17,7 +17,7 @@ import platform
 import configparser
 import urllib.parse as urlparse
 from urllib.parse import urlencode
-
+import numpy as np
 from fan_detect.settings import SOCKET_STATUS, CONFIG_PATH
 from fan_detect import settings
 
@@ -57,13 +57,15 @@ def list_file(path: str) -> list:
 def save_base64(img_str: str, out_file: str, resize: bool = False):
     image = base64.b64decode(img_str)
     imagePath = (out_file)
-    img = Image.open(io.BytesIO(image))
+
+    byteImgIO =  io.BytesIO(image)
+    byteImgIO.seek(0)
+    img = Image.open(byteImgIO)
 
     if resize:
         (w, h) = img.size
         img = img.resize((int(w / 5), int(h / 5)))
     img.save(imagePath, 'jpeg')
-
 
 def clean_file(sn: str):
     path = (handle_path(settings.MEDIA_ROOT, "image"))
@@ -196,3 +198,17 @@ def checkout(work_order: str, sn: str,test_result: str):
 
     if resp_json["API_RESULT"] != "OK":
         raise Exception(resp_json["API_ERROR_MESSAGE"])
+
+def recvall(sock):
+    BUFF_SIZE = 4096 # 4 KiB
+    data = b''
+    #sock.setblocking(0)
+    while True:
+        part = sock.recv(BUFF_SIZE)
+        data += part
+        if len(part) < BUFF_SIZE:
+            # either 0 or end of data
+            break
+    json_data = json.loads((data.decode("utf-8").replace("'", '"')))
+
+    return json_data

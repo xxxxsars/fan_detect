@@ -6,11 +6,8 @@ Author Andy Huang
 '''
 
 import socket
-import datetime
 import logging
-import json
 import cv2
-import numpy as np
 import tensorflow as tf
 import os
 import sys
@@ -76,10 +73,26 @@ def load_model(model_dir):
     model = tf.saved_model.load(model_dir)
     return model
 
-def load_image(image_path):
+def load_image(image_path:str)->np.array:
     img = Image.open(image_path)
     image_np = np.array(img)
     return  image_np
+
+def img_to_np(img:str)->np.array:
+    img_data = base64.b64decode(img)
+    nparr = np.fromstring(img_data, np.uint8)
+    img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    return  img_np
+
+def np_to_base64(img_np)->str:
+    img = Image.fromarray(img_np)
+    output_buffer = io.BytesIO()
+    img.save(output_buffer, format='JPEG')
+    byte_data = output_buffer.getvalue()
+    base64_str = base64.b64encode(byte_data)
+
+    return base64_str.decode()
 
 def load_label(label_path):
     return label_map_util.create_category_index_from_labelmap(label_path, use_display_name=True)
@@ -106,16 +119,25 @@ def show_inference(model,category_index, image_np):
 
     return  result
 
-def predict_image(model,label,image_path,out_img_path=None)->str:
+def test_predict(model,label,img_path):
+    img_np = load_image(img_path)
+    category_index = label
+    predict_result = show_inference(model,category_index,img_np)
 
-    image_np = load_image(image_path)
+    predict_class = ",".join(predict_result["predict_class"])
+
+    return  predict_class
+
+
+def predict_image(model,label,img_np,work_order,sn)->str:
 
     category_index = label
 
-    predict_result = show_inference(model,category_index,image_np)
+    predict_result = show_inference(model,category_index,img_np)
 
+    result_img = predict_result["image_np"]
 
-    im = Image.fromarray(predict_result["image_np"])
+    img_str = np_to_base64(result_img)
 
     if not predict_result["predict_class"]:
         predict_class = "Not Detect"
@@ -124,12 +146,9 @@ def predict_image(model,label,image_path,out_img_path=None)->str:
     else:
         predict_class = ",".join(predict_result["predict_class"])
 
-    if out_img_path !=None:
-        path_split = os.path.split(out_img_path)
-        im.save(handle_path(path_split[0],predict_class,path_split[1]))
 
+    return  str({"predict_class":predict_class,"img":img_str})
 
-    return predict_class
 
 class SOCKERT_SERVER:
     def __init__(self):
@@ -146,7 +165,7 @@ class SOCKERT_SERVER:
         server.bind((self.host, self.prot))
         server.listen(1)
 
-        test_class = predict_image(self.model, self.label, handle_path(MEDIA_ROOT,"test.jpg"))
+        test_class = test_predict(self.model, self.label, handle_path(MEDIA_ROOT,"test.jpg"))
         assert test_class =="PASS","Initial predict image had error."
 
         time = (datetime.datetime.now()).strftime("%d/%b/%Y %H:%H:%S")
@@ -158,11 +177,11 @@ class SOCKERT_SERVER:
             conn, addr = server.accept()
             #Runtime error will show on web page
             try:
-                sn = str(conn.recv(1024), encoding='utf-8')
-                img_path = handle_path(MEDIA_ROOT,"image","source",f"{sn}.jpg")
-                out_path = handle_path(MEDIA_ROOT,"image","result",f"{sn}.jpg")
-
-                predict_class = predict_image(self.model, self.label, img_path,out_path)
+                recv_data = recvall(conn)
+                img_np = (img_to_np(recv_data['image']))
+                work_order = recv_data["work_order"]
+                sn = recv_data["sn"]
+                predict_class = predict_image(self.model, self.label, img_np, work_order, sn)
                 conn.sendall(predict_class.encode())
             except Exception as e:
                 err  = f"Error : {e}"
