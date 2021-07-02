@@ -24,7 +24,7 @@ from .settings import STATIC_ROOT
 
 
 import subprocess
-subprocess.Popen("python api/socket_server.py".split(" "))
+subprocess.Popen("python3 api/socket_server.py".split(" "))
 
 urlpatterns = [
     # path('admin/', admin.site.urls),

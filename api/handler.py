@@ -209,6 +209,11 @@ def recvall(sock):
         if len(part) < BUFF_SIZE:
             # either 0 or end of data
             break
-    json_data = json.loads((data.decode("utf-8").replace("'", '"')))
 
+    print(len(data))
+
+    json_data = json.loads((data.decode("utf-8").replace("'", '"')))
+    # print("json_data",json_data)
     return json_data
+
+

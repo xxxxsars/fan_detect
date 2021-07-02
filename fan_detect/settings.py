@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'k1+*bu8c9#d3=&5n!7%(4!6j)#=dn*re=lec@9b+mt0xs_c5f_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -137,6 +137,7 @@ STATICFILES_DIRS = (
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")
 LOG_PATH = os.path.join(os.path.join(BASE_DIR,"log"),"socket_err.log")
 CONFIG_PATH = os.path.join(BASE_DIR,"config.ini")
+
 
 SESSION_COOKIE_AGE = 60 *60
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
